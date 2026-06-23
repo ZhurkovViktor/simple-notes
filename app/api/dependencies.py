@@ -21,6 +21,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_session),
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -34,13 +35,10 @@ async def get_current_user(
     except (KeyError, TypeError, ValueError, jwt.PyJWTError) as exc:
         raise credentials_exception from exc
 
-    async for session in get_session():
-        result = await session.execute(select(User).where(User.id == user_id))
-        user = result.scalar_one_or_none()
+    result = await session.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
 
-        if user is None:
-            raise credentials_exception
+    if user is None:
+        raise credentials_exception
 
-        return user
-
-    raise credentials_exception
+    return user
