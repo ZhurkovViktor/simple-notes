@@ -1,6 +1,6 @@
-from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import NoteNotFoundError
 from app.database.models import Note, NoteHistory
 from app.repositories.notes import NoteRepository
 from app.schemas.notes import NoteCreate, NoteUpdate
@@ -80,7 +80,4 @@ class NoteService:
 
 
 def raise_note_not_found() -> None:
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Note not found",
-    )
+    raise NoteNotFoundError
