@@ -5,6 +5,7 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.database.models import User
 from app.repositories.users import UserRepository
 from app.schemas.auth import TokenResponse, UserRegister
+from app.unit_of_work import UnitOfWork
 
 
 class AuthService:
@@ -13,23 +14,24 @@ class AuthService:
         self.users = UserRepository(session)
 
     async def register(self, user_data: UserRegister) -> User:
-        email = user_data.email.lower()
-        existing_user = await self.users.get_by_email(email)
+        async with UnitOfWork(self.session) as uow:
+            email = user_data.email.lower()
+            existing_user = await uow.users.get_by_email(email)
 
-        if existing_user is not None:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="User with this email already exists",
+            if existing_user is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="User with this email already exists",
+                )
+
+            user = User(
+                email=email,
+                password_hash=hash_password(user_data.password),
             )
+            user = await uow.users.add(user)
+            await uow.commit()
 
-        user = User(
-            email=email,
-            password_hash=hash_password(user_data.password),
-        )
-        user = await self.users.add(user)
-        await self.session.commit()
-
-        return user
+            return user
 
     async def authenticate(self, email: str, password: str) -> User:
         user = await self.users.get_by_email(email.lower())

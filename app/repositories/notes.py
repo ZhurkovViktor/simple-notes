@@ -30,6 +30,9 @@ class NoteRepository:
         return result.scalar_one_or_none()
 
     async def delete(self, note_id: int, owner_id: int) -> bool:
+        await self.session.execute(
+            delete(NoteHistory).where(NoteHistory.note_id == note_id),
+        )
         result = await self.session.execute(
             delete(Note).where(
                 Note.id == note_id,
