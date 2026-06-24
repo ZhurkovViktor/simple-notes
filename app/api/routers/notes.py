@@ -9,7 +9,7 @@ from app.schemas.notes import NoteCreate, NoteResponse, NoteUpdate
 from app.services.notes import NoteService
 
 
-router = APIRouter(prefix="/api/v1/notes", tags=["Notes"])
+router = APIRouter(tags=["Notes"])
 
 
 @router.post("", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)

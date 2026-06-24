@@ -8,7 +8,7 @@ from app.schemas.templates import TemplateResponse
 from app.services.templates import TemplateService
 
 
-router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
+router = APIRouter(tags=["Templates"])
 
 
 @router.get("", response_model=list[TemplateResponse])
