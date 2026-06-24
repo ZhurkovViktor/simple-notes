@@ -9,12 +9,20 @@ from app.api.routers.notes import router as notes_router
 from app.api.routers.templates import router as templates_router
 from app.database.automap import prepare_automap
 from app.database.session import engine
+from app.ioc import create_container
+from dishka.integrations.fastapi import setup_dishka
+
+
+dishka_container = create_container()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await prepare_automap(engine)
-    yield
+    try:
+        yield
+    finally:
+        await dishka_container.close()
 
 
 app = FastAPI(
@@ -26,6 +34,7 @@ app = FastAPI(
 app.include_router(auth_router)
 app.include_router(notes_router)
 app.include_router(templates_router)
+setup_dishka(dishka_container, app)
 
 
 @app.get("/", include_in_schema=False)
