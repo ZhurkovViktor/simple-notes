@@ -4,8 +4,13 @@ from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import APIRouter, Depends, Response, status
 
 from app.api.dependencies import get_current_user
-from app.database.models import Note, User
-from app.schemas.notes import NoteCreate, NoteResponse, NoteUpdate
+from app.database.models import Note, NoteHistory, User
+from app.schemas.notes import (
+    NoteCreate,
+    NoteHistoryResponse,
+    NoteResponse,
+    NoteUpdate,
+)
 from app.services.notes import NoteService
 
 
@@ -39,6 +44,16 @@ async def get_note(
     service: FromDishka[NoteService],
 ) -> Note:
     return await service.get_one(note_id, current_user.id)
+
+
+@router.get("/{note_id}/history", response_model=list[NoteHistoryResponse])
+@inject
+async def get_note_history(
+    note_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    service: FromDishka[NoteService],
+) -> list[NoteHistory]:
+    return await service.get_history(note_id, current_user.id)
 
 
 @router.patch("/{note_id}", response_model=NoteResponse)
