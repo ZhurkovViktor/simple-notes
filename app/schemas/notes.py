@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class NoteCreate(BaseModel):
-    title: str
+    title: str = Field(min_length=1)
     content: str
 
 
 class NoteUpdate(BaseModel):
-    title: str | None = None
+    title: str | None = Field(default=None, min_length=1)
     content: str | None = None
 
 
