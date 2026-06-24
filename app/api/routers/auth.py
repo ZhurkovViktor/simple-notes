@@ -8,11 +8,12 @@ from app.schemas.auth import TokenResponse, UserRegister, UserResponse
 from app.services.auth import AuthService
 
 
-router = APIRouter(prefix="/api/v1", tags=["Auth"])
+auth_router = APIRouter(tags=["Authentication"])
+users_router = APIRouter(tags=["Users"])
 
 
-@router.post(
-    "/auth/register",
+@auth_router.post(
+    "/register",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -24,7 +25,7 @@ async def register_user(
     return await service.register(user_data)
 
 
-@router.post("/auth/token", response_model=TokenResponse)
+@auth_router.post("/token", response_model=TokenResponse)
 async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session),
@@ -33,6 +34,6 @@ async def login_user(
     return await service.login(form_data.username, form_data.password)
 
 
-@router.get("/users/me", response_model=UserResponse)
+@users_router.get("/me", response_model=UserResponse)
 async def read_current_user(current_user: User = Depends(get_current_user)) -> User:
     return current_user
