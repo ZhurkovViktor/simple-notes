@@ -1,17 +1,31 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
 from app.api.routers.auth import router as auth_router
 from app.api.routers.notes import router as notes_router
+from app.api.routers.templates import router as templates_router
+from app.database.automap import prepare_automap
+from app.database.session import engine
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    await prepare_automap(engine)
+    yield
 
 
 app = FastAPI(
     title="Personal Notes API",
     version="1.0.0",
     description="API для управления личными заметками",
+    lifespan=lifespan,
 )
 app.include_router(auth_router)
 app.include_router(notes_router)
+app.include_router(templates_router)
 
 
 @app.get("/", include_in_schema=False)
